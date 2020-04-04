@@ -223,5 +223,7 @@ import { PassportModule } from '@nestjs/passport'
       username: string;
   }
 ``` 
-- Result
+## JWT Result Encoder
+<p align="center">
 <img src ="https://sv1.picz.in.th/images/2020/04/05/Qp24pu.png" width="640" />
+</p>
