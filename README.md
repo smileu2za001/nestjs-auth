@@ -14,7 +14,25 @@ $ nest g service auth --no-spec
 
 ## Create Entity and Repository
 - create new file on auth 'user.entity.ts'
+```bash
+  @Entity()
+  export class User extends BaseEntity{
+      @PrimaryGeneratedColumn()
+      id : number;
+
+      @Column()
+      username: string;
+
+      @Column()
+      password: string; 
+  }
+```
+
 - create new file on auth 'user.repository.ts'
+```bash
+  @EntityRepository(User)
+  export class UserRepository extends Repository<User>{}
+```
 
 - on 'auth.module.ts' add into "@Module"
 ```bash
@@ -23,7 +41,7 @@ $ nest g service auth --no-spec
   ],
 ```
 
-- on 'auth.module.ts' add into "export class AuthService {"
+- on 'auth.services.ts' add into "export class AuthService {"
 ```bash
     constructor(
         @InjectRepository(UserRepository)
@@ -40,7 +58,23 @@ export class AuthCredentialsDto {
 }
 ```
 ## Function SignUp()
-- async signUp Function() on repository, services and controller
+
+- 'auth.controller.ts'
+```bash
+    @Post('/signup')
+    signUp(@Body() authCredentialsDto: AuthCredentialsDto): Promise<void> {}
+```
+- 'auth.service.ts'
+```bash
+    async signUp(authCredentialsDto: AuthCredentialsDto): Promise<void> {
+        return this.userRepository.singUp(authCredentialsDto);
+    }
+```
+- 'user.repository.ts'
+```bash
+    async singUp(authCredentialsdto: AuthCredentialsDto): Promise<void> {}
+```
+
 
 ## Unique Username
 - add into 'user.repositoty.ts
