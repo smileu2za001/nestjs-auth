@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo_text.svg" width="320" alt="Nest Logo" /></a>
+<img src="https://s.rfi.fr/media/display/1cf44058-0ec0-11ea-a7cf-005056a9aa4d/w:480/p:16x9/osamacloseup.jpg" width="320" />
 </p>
 
 
@@ -96,7 +96,12 @@ export class AuthCredentialsDto {
   @Unique(['username'])
 ```
 
-## Complexity Password
+## Complexity Password & Hashing
+- Terminal
+```bash
+  $ npm install bcrypt --save
+  $ yarn add bcrypt
+``` 
 - Add into 'auth.controller.ts
 ```bash
   @UsePipes(ValidationPipe)
@@ -109,4 +114,16 @@ export class AuthCredentialsDto {
   @Matches(
       /((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$/,
 ```
-
+- 'user.repository.ts' on Class 'UserRepository
+```bash
+  private async hashPassword(PASSWORD:string, SALT:string): Promise<string>{
+      return bcrypt.hash(PASSWORD,SALT);
+  }
+```
+- 'user.repository.ts' on Function 'signUp()'
+```bash
+  const user = new User();
+  user.username = USERNAME;
+  user.salt = await bcrypt.genSalt();
+  user.password = await this.hashPassword(PASSWORD,user.salt);
+```
