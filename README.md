@@ -1,6 +1,7 @@
 ## Welcome to NestJS Authentication Project
 <p align="center">
 <img src="https://cdn.britannica.com/93/153593-050-15D2B42F/Osama-bin-Laden.jpg" width="320" />
+<h1> This Progression on Project </h1>
 </p>
 
 
@@ -172,3 +173,55 @@ export class AuthCredentialsDto {
       return this.authService.signIn(authCredentialsDto);
   }
 ```
+
+### JWT Module
+- terminal
+```bash
+  npm add @nestjs/jwt @nestjs/passport passport passport-jwt
+``` 
+- add into 'auth.module.ts' 
+```bash
+import { JwtModule } from '@nestjs/jwt'
+import { PassportModule } from '@nestjs/passport'
+
+@Module({
+  imports: [
+    PassportModule.register({ defaultStrategy: 'jwt' }),
+    JwtModule.register({
+      secret: 'topSecret51',
+      signOptions: {
+        expiresIn: 3600,
+      },
+    }),
+``` 
+- 'auth.service.ts' on class 'AuthService'
+```bash
+  private jwtService: JwtService,
+``` 
+```bash
+  async signIn(authCredentialsDto: AuthCredentialsDto): Promise<{ accessToken: string}>{
+      const username = await this.userRepository.validateUserPassword(authCredentialsDto);
+      if (!username) {
+          throw new UnauthorizedException('Invalid credentials')
+      }
+      const payload: JwtPayLoad = { username };
+      const accessToken = await this.jwtService.sign(payload);
+
+      return {accessToken};
+  }
+``` 
+- 'auth.controller.ts' on class 'AuthController'
+```bash
+  @Post('/signin')
+  signIn(@Body(ValidationPipe) authCredentialsDto: AuthCredentialsDto): Promise<{ accessToken: string}>{
+      return this.authService.signIn(authCredentialsDto);
+  }
+``` 
+- New file 'jwt-payload.interface.ts'
+```bash
+  export interface JwtPayLoad {
+      username: string;
+  }
+``` 
+- Result
+<img src ="https://sv1.picz.in.th/images/2020/04/05/Qp24pu.png" width="640" />
