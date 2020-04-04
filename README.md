@@ -128,3 +128,47 @@ export class AuthCredentialsDto {
   user.salt = await bcrypt.genSalt();
   user.password = await this.hashPassword(PASSWORD,user.salt);
 ```
+
+
+## Sign In System
+- 'user.entity.ts' on class 'User'
+```bash
+  async validatePassword(PASSWORD: string): Promise<boolean> {
+      const hash = await bcrypt.hash(PASSWORD, this.salt);
+      return hash === this.password;
+  }
+``` 
+- 'user.repository.ts' on class 'UserRepository'
+```bash
+  async validateUserPassword(authCredentialsDto: AuthCredentialsDto): Promise<string> {
+    const USERNAME = authCredentialsDto.username;
+    const PASSWORD = authCredentialsDto.password;
+    
+    const username = USERNAME;
+    const user = await this.findOne({username});
+    
+    if (user && await user.validatePassword(PASSWORD)) {
+        return user.username;
+    }
+    else {
+        return null;
+    }
+  }
+```
+- 'auth.service.ts' on class 'AuthService'
+```bash
+  async signIn(authCredentialsDto: AuthCredentialsDto){
+      const username  = await this.userRepository.validateUserPassword(authCredentialsDto);
+      if(!username){
+          throw new UnauthorizedException('Invalid credentials')
+      }
+      return username;
+  }
+```
+- 'auth.controller.ts' on class 'AuthController'
+```bash
+  @Post('/signin')
+  signIn(@Body(ValidationPipe) authCredentialsDto: AuthCredentialsDto){
+      return this.authService.signIn(authCredentialsDto);
+  }
+```
