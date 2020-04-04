@@ -1,7 +1,6 @@
-## Welcome to NestJS Authentication Project
+# Welcome to NestJS Authentication Project
 <p align="center">
 <img src="https://cdn.britannica.com/93/153593-050-15D2B42F/Osama-bin-Laden.jpg" width="320" />
-<h1> This Progression on Project </h1>
 </p>
 
 
@@ -174,25 +173,44 @@ export class AuthCredentialsDto {
   }
 ```
 
-### JWT Module
+## JWT Module
 - terminal
 ```bash
   npm add @nestjs/jwt @nestjs/passport passport passport-jwt
 ``` 
 - add into 'auth.module.ts' 
 ```bash
-import { JwtModule } from '@nestjs/jwt'
-import { PassportModule } from '@nestjs/passport'
+  import { Module } from '@nestjs/common';
+  import { AuthController } from './auth.controller';
+  import { AuthService } from './auth.service';
+  import { TypeOrmModule } from '@nestjs/typeorm';
+  import { UserRepository } from './user.repository';
+  import { JwtModule } from '@nestjs/jwt'
+  import { PassportModule } from '@nestjs/passport'
+  import { JwtStrategy } from './jwt.strategy';
 
-@Module({
-  imports: [
-    PassportModule.register({ defaultStrategy: 'jwt' }),
-    JwtModule.register({
-      secret: 'topSecret51',
-      signOptions: {
-        expiresIn: 3600,
-      },
-    }),
+  @Module({
+    imports: [
+      PassportModule.register({ defaultStrategy: 'jwt' }),
+      JwtModule.register({
+        secret: 'topSecret51',
+        signOptions: {
+          expiresIn: 3600,
+        },
+      }),
+      TypeOrmModule.forFeature([UserRepository])
+    ],
+    controllers: [AuthController],
+    providers: [
+      AuthService,
+      JwtStrategy,
+    ],
+    exports: [
+      JwtStrategy,
+      PassportModule,
+    ]
+  })
+  export class AuthModule { }
 ``` 
 - 'auth.service.ts' on class 'AuthService'
 ```bash
@@ -217,13 +235,80 @@ import { PassportModule } from '@nestjs/passport'
       return this.authService.signIn(authCredentialsDto);
   }
 ``` 
-- New file 'jwt-payload.interface.ts'
+- Create New file 'jwt-payload.interface.ts'
 ```bash
   export interface JwtPayLoad {
       username: string;
   }
 ``` 
+- Create New file 'jwt.strategy.ts'
+```bash
+  import { PassportStrategy } from '@nestjs/passport'
+  import { JwtPayLoad } from './jwt-payload.interface'
+  import { Strategy, ExtractJwt } from 'passport-jwt'
+  import { Injectable, UnauthorizedException } from '@nestjs/common';
+  import { InjectRepository } from '@nestjs/typeorm';
+  import { UserRepository } from './user.repository';
+  import { User } from './user.entity';
+
+  @Injectable()
+  export class JwtStrategy extends PassportStrategy(Strategy) {
+      constructor(
+          @InjectRepository(UserRepository)
+          private userRepository: UserRepository,
+      ) {  
+          super({
+              jwtFromRequest : ExtractJwt.fromAuthHeaderAsBearerToken(),
+              secretOrKey: 'topSecret51',
+          });
+      }
+
+      async validate(payload: JwtPayLoad): Promise<User> {
+          const { username } = payload;
+          const user = await this.userRepository.findOne({ username });
+
+          if (!user) {
+              throw new UnauthorizedException();
+          }
+          return user;
+      }
+  }
+```
+
 ## JWT Result Encoder
 <p align="center">
 <img src="https://s3-ap-southeast-1.amazonaws.com/img-in-th/19d435be1198d552d1c9955d1992e371.png" alt="19d435be1198d552d1c9955d1992e371.png" width="640" />
 </p>
+
+
+## Route Task Path
+- Import 'AuthModule' into 'Tasks.module.ts'
+```bash
+  imports: [
+    TypeOrmModule.forFeature([TaskRepository]),
+    AuthModule,
+  ],
+```
+- add @UserGauard into 'tasks.controller.ts'
+```bash
+  @Controller('tasks')
+  @UseGuards(AuthGuard())
+```
+
+## GET ALL TASK in POSTMAN
+- If get all tasks without Authorize
+```bash
+  {
+    "statusCode": 401,
+    "message": "Unauthorized"
+  }
+```
+- If get all tasks With Authorize
+```bash
+    {
+      "id": 6,
+      "title": "Test",
+      "description": "Test Language",
+      "status": "OPEN"
+    },
+```
