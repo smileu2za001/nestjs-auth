@@ -1,8 +1,9 @@
-# Welcome to NestJS Authentication Project
+# Welcome to NestJS#2 User Authentication Project
 <p align="center">
 <img src="https://cdn.britannica.com/93/153593-050-15D2B42F/Osama-bin-Laden.jpg" width="320" />
+  <h4><a href="https://github.com/smileu2za001/nestjs">PART1 - SQL DB Connecting</a></h4>
+  <h4><a href="https://github.com/smileu2za001/nestjs-auth">PART2 - User Authentication</a></h4>
 </p>
-
 
 ## Create Serv, Ctrl and Module
 
